@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ead_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=ead-authuser
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ead_platform
+volumes:
+  postgres_data:
+networks:
+  ead_platform:
+    driver: bridge
