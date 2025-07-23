@@ -3,13 +3,9 @@ package com.ead.authuser.controllers;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -32,6 +28,14 @@ public class UserController {
             @PathVariable(value = "userId") UUID userId
     ) {
         return ResponseEntity.ok(userService.getUserById(userId));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Object> deleteUserById(
+            @PathVariable(value = "userId") UUID userId
+    ) {
+        userService.deleteUserById(userService.getUserById(userId));
+        return ResponseEntity.noContent().build();
     }
 
 }
