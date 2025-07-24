@@ -1,5 +1,6 @@
 package com.ead.authuser.service.impl;
 
+import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserModel getUserById(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
     }
 
     @Override
