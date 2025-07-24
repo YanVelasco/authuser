@@ -1,5 +1,6 @@
 package com.ead.authuser.service;
 
+import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.models.UserModel;
 
 import java.util.List;
@@ -12,5 +13,7 @@ public interface UserService {
     UserModel getUserById(UUID userId);
 
     void deleteUserById( UserModel userModel);
+
+    UserModel registerUser(UserDto userDto);
 
 }

@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -61,10 +62,10 @@ public class UserModel implements Serializable {
 
     @Column(name = "creation_date", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
-    private String creationDate;
+    private LocalDateTime creationDate;
 
     @Column(name = "last_update_date", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
-    private String lastUpdateDate;
+    private LocalDateTime lastUpdateDate;
 
 }
