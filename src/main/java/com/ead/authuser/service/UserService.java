@@ -20,4 +20,6 @@ public interface UserService {
 
     UserModel updatePassword(UserModel userModel, UserDto userDto);
 
+    UserModel updateUserImage(UserModel userModel, UserDto userDto);
+
 }
