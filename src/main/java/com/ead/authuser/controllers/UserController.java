@@ -1,7 +1,10 @@
 package com.ead.authuser.controllers;
 
+import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.service.UserService;
+import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +39,28 @@ public class UserController {
     ) {
         userService.deleteUserById(userService.getUserById(userId));
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<Object> updateUserById(
+            @PathVariable(value = "userId") UUID userId,
+            @RequestBody @JsonView(UserDto.UserView.UserPut.class) UserDto userDto
+    ) {
+        UserModel userModel = userService.getUserById(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUser(userModel, userDto));
+    }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<Object> updateUserPassword(
+            @PathVariable(value = "userId") UUID userId,
+            @RequestBody @JsonView(UserDto.UserView.PasswordPut.class) UserDto userDto
+    ) {
+        var userModel = userService.getUserById(userId);
+        if(!userModel.getPassword().equals(userDto.oldPassword())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password does not match.");
+        }
+        userService.updatePassword(userModel, userDto);
+        return ResponseEntity.status(HttpStatus.OK).body("Password updated successfully.");
     }
 
 }
