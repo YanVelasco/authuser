@@ -27,7 +27,7 @@ public record UserDto(
         @JsonView({UserView.RegistrationPost.class, UserView.PasswordPut.class})
         String password,
 
-        @NotBlank(message = "Old password cannot be blank")
+        @NotBlank(groups = {UserView.PasswordPut.class}, message = "Old password cannot be blank")
         @Size(groups = {UserView.PasswordPut.class}, min = 6, max = 20, message = "Old password must be between 6 and" +
                 " 20 characters")
         @JsonView({UserView.PasswordPut.class})
