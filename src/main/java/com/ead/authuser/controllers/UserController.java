@@ -1,15 +1,21 @@
 package com.ead.authuser.controllers;
 
+import com.ead.authuser.constants.PaginationConstants;
 import com.ead.authuser.dtos.UserDto;
+import com.ead.authuser.dtos.UserPageDto;
+import com.ead.authuser.enums.UserStatus;
+import com.ead.authuser.enums.UserType;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,8 +29,17 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserModel>> getUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<UserPageDto> getUsers(
+            Pageable pageable,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) UserStatus userStatus,
+            @RequestParam(required = false) UserType userType,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String courseId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.findAll(pageable, fullName, userStatus, userType, username, email, courseId));
     }
 
     @GetMapping("/{userId}")
