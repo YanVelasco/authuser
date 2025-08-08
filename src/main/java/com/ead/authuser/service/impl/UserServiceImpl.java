@@ -1,5 +1,6 @@
 package com.ead.authuser.service.impl;
 
+import com.ead.authuser.controllers.UserController;
 import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
 import com.ead.authuser.enums.UserStatus;
@@ -19,6 +20,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -103,6 +107,13 @@ public class UserServiceImpl implements UserService {
         }
 
         var pageResult = userRepository.findAll(spec, pageable);
+
+        if (!pageResult.isEmpty()) {
+            for (UserModel userModel : pageResult) {
+                userModel.add(linkTo(methodOn(UserController.class).getUserById(userModel.getUserId())).withSelfRel());
+            }
+        }
+
         return UserPageDto.from(pageResult);
     }
 
