@@ -3,6 +3,9 @@ package com.ead.authuser.exceptions.globalexception;
 import com.ead.authuser.exceptions.AlreadyExistsException;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.exceptions.response.ErrorResponseDto;
+import com.ead.authuser.service.impl.UserServiceImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,6 +18,8 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LogManager.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException ex) {
@@ -31,6 +36,8 @@ public class GlobalExceptionHandler {
                 "Validation failed",
                 errors
                 );
+
+        logger.error("Validation errors: {}", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 
     }
@@ -44,6 +51,8 @@ public class GlobalExceptionHandler {
                 null
         );
 
+        logger.error("NotFoundException: {}", ex.getMessage());
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
     }
@@ -56,6 +65,8 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 null
         );
+
+        logger.error("AlreadyExistsException: {}", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
 

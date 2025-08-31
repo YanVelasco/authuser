@@ -10,8 +10,9 @@ import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
+
     final UserRepository userRepository;
 
     public UserServiceImpl(UserRepository userRepository) {
@@ -40,6 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel getUserById(UUID userId) {
+        logger.debug("Get user by id: {}", userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
     }
@@ -52,6 +56,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserModel registerUser(UserDto userDto) {
         if (userRepository.existsByUsername(userDto.username()) || userRepository.existsByEmail(userDto.email())) {
+            logger.warn("Username or Email already exists: {}, {}", userDto.username(), userDto.email());
             throw new AlreadyExistsException("Username or email already exists.");
         }
         var userModel = new UserModel();
@@ -65,6 +70,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel updateUser(UserModel userModel, UserDto userDto) {
+        logger.debug("UserDto received {}", userDto);
         userModel.setFullName(userDto.fullName());
         userModel.setPhoneNumber(userDto.phoneNumber());
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
@@ -73,6 +79,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel updatePassword(UserModel userModel, UserDto userDto) {
+        logger.debug("New password {} received ", userDto.password());
         userModel.setPassword(userDto.password());
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         return userRepository.save(userModel);
@@ -80,18 +87,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel updateUserImage(UserModel userModel, UserDto userDto) {
+        logger.debug("New image {} received ", userDto.imageUrl());
         userModel.setImageUrl(userDto.imageUrl());
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         return userRepository.save(userModel);
     }
 
     @Override
-    public UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType, String username, String email, String courseId) {
+    public UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType,
+                               String username, String email, String courseId) {
 
         Specification<UserModel> spec = (root, query, cb) -> cb.conjunction();
 
         if (fullName != null && !fullName.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("fullName")), "%" + fullName.toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("fullName")),
+                    "%" + fullName.toLowerCase() + "%"));
         }
         if (userStatus != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("userStatus"), userStatus));
@@ -100,7 +110,8 @@ public class UserServiceImpl implements UserService {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("userType"), userType));
         }
         if (username != null && !username.isBlank()) {
-            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("username")),
+                    "%" + username.toLowerCase() + "%"));
         }
         if (email != null && !email.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
