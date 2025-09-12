@@ -19,7 +19,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserCourseModel extends RepresentationModel<UserCourseModel> implements Serializable {
+public class UserCourseModel implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
