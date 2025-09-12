@@ -30,7 +30,16 @@ public class CourseClient {
                 "&sort=" + pageable.getSort().toString().replace(": ", ",") +
                 "&userInstructor=" + userId;
         logger.debug("Request URL: {}", url);
-        return restClient.get().uri(url).retrieve().body(CoursePageDto.class);
+        try {
+            return restClient
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(CoursePageDto.class);
+        } catch (Exception e) {
+            logger.error("Error fetching courses for user {}: {}", userId, e.getMessage());
+            return null;
+        }
     }
 
 }
