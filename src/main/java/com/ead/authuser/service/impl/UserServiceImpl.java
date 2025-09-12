@@ -10,6 +10,8 @@ import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -95,7 +97,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType,
-                               String username, String email, String courseId) {
+                               String username, String email, UUID courseId) {
 
         Specification<UserModel> spec = (root, query, cb) -> cb.conjunction();
 
@@ -116,6 +118,14 @@ public class UserServiceImpl implements UserService {
         if (email != null && !email.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
         }
+
+        if (courseId != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Object, Object> userCourseJoin = root.join("userCourses", JoinType.INNER);
+                return cb.equal(userCourseJoin.get("courseId"), courseId);
+            });
+        }
+
 
         var pageResult = userRepository.findAll(spec, pageable);
 

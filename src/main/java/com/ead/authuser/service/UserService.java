@@ -26,6 +26,6 @@ public interface UserService {
 
     UserModel updateUserImage(UserModel userModel, UserDto userDto);
 
-    UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType, String username, String email, String courseId);
+    UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType, String username, String email, UUID courseId);
 
 }

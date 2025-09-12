@@ -37,7 +37,7 @@ public class UserController {
             @RequestParam(required = false) UserType userType,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String courseId
+            @RequestParam(required = false) UUID courseId
     ) {
         logger.debug("GET getUsers: fullName {}, userStatus {}, userType {}, username {}, email {}, courseId {}",
                 fullName, userStatus, userType, username, email, courseId);
