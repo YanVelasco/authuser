@@ -25,8 +25,8 @@ public class UserCourseController {
     @GetMapping("/users/{userId}/courses")
     public ResponseEntity<CoursePageDto> getCoursesByUser(
             @PageableDefault(sort = "courseId", direction = Sort.Direction.DESC) Pageable pageable,
-            @PathVariable(value = "userId") UUID userId,
-            Sort sort){
+            @PathVariable(value = "userId") UUID userId
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(courseClient.getAllCoursesByUser(userId, pageable));
     }
 
