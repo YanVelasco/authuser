@@ -3,7 +3,6 @@ package com.ead.authuser.controllers;
 import com.ead.authuser.clients.CourseClient;
 import com.ead.authuser.dtos.CoursePageDto;
 import com.ead.authuser.dtos.UserCourseDto;
-import com.ead.authuser.models.UserCourseModel;
 import com.ead.authuser.service.UserCourseService;
 import com.ead.authuser.service.UserService;
 import jakarta.validation.Valid;
@@ -23,7 +22,8 @@ public class UserCourseController {
     final UserService userService;
     final UserCourseService userCourseService;
 
-    public UserCourseController(CourseClient courseClient, UserService userService, UserCourseService userCourseService) {
+    public UserCourseController(CourseClient courseClient, UserService userService,
+                                UserCourseService userCourseService) {
         this.courseClient = courseClient;
         this.userService = userService;
         this.userCourseService = userCourseService;
@@ -38,12 +38,12 @@ public class UserCourseController {
     }
 
     @PostMapping("/users/{userId}/courses/subscription")
-    public ResponseEntity<Object> saveSubscriptionUserInnCourse(
+    public ResponseEntity<Object> saveSubscriptionUserInCourse(
             @PathVariable(value = "userId") UUID userId,
             @RequestBody @Valid UserCourseDto userCourseDto
     ) {
         var userModel = userService.getUserById(userId);
-        if(userCourseService.existsByUserAndCourseId(userModel, userCourseDto.courseId())) {
+        if (userCourseService.existsByUserAndCourseId(userModel, userCourseDto.courseId())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Subscription already exists.");
         }
 
