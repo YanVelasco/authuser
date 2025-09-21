@@ -138,4 +138,11 @@ public class UserServiceImpl implements UserService {
         return UserPageDto.from(pageResult);
     }
 
+    @Override
+    public UserModel saveSubscriptionInstructor(UserModel userModel) {
+        userModel.setUserType(UserType.INSTRUCTOR);
+        userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
+        return userRepository.save(userModel);
+    }
+
 }

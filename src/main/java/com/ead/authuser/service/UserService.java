@@ -16,7 +16,7 @@ public interface UserService {
 
     UserModel getUserById(UUID userId);
 
-    void deleteUserById( UserModel userModel);
+    void deleteUserById(UserModel userModel);
 
     UserModel registerUser(UserDto userDto);
 
@@ -26,6 +26,9 @@ public interface UserService {
 
     UserModel updateUserImage(UserModel userModel, UserDto userDto);
 
-    UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType, String username, String email, UUID courseId);
+    UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType, String username
+            , String email, UUID courseId);
+
+    UserModel saveSubscriptionInstructor(UserModel userModel);
 
 }
