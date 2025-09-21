@@ -5,7 +5,6 @@ import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
 import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
-import com.ead.authuser.exceptions.AlreadyExistsException;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.repository.UserRepository;
@@ -57,10 +56,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserModel registerUser(UserDto userDto) {
-        if (userRepository.existsByUsername(userDto.username()) || userRepository.existsByEmail(userDto.email())) {
-            logger.warn("Username or Email already exists: {}, {}", userDto.username(), userDto.email());
-            throw new AlreadyExistsException("Username or email already exists.");
-        }
         var userModel = new UserModel();
         BeanUtils.copyProperties(userDto, userModel);
         userModel.setUserStatus(UserStatus.ACTIVE);
@@ -143,6 +138,16 @@ public class UserServiceImpl implements UserService {
         userModel.setUserType(UserType.INSTRUCTOR);
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         return userRepository.save(userModel);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
 }
