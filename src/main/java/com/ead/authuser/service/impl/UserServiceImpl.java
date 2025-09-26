@@ -7,6 +7,7 @@ import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
+import com.ead.authuser.repository.UserCourseRepository;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
 import jakarta.persistence.criteria.Join;
@@ -32,9 +33,11 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
     final UserRepository userRepository;
+    final UserCourseRepository userCourseRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserCourseRepository userCourseRepository) {
         this.userRepository = userRepository;
+        this.userCourseRepository = userCourseRepository;
     }
 
     @Override
@@ -51,6 +54,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUserById(UserModel userModel) {
+        var userCourses = userCourseRepository.findAllByUserId(userModel);
+        if (!userCourses.isEmpty()) {
+            userCourseRepository.deleteAll(userCourses);
+        }
         userRepository.delete(userModel);
     }
 
