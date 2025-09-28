@@ -1,5 +1,6 @@
 package com.ead.authuser.service.impl;
 
+import com.ead.authuser.clients.CourseClient;
 import com.ead.authuser.controllers.UserController;
 import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
@@ -18,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -34,10 +36,13 @@ public class UserServiceImpl implements UserService {
 
     final UserRepository userRepository;
     final UserCourseRepository userCourseRepository;
+    final CourseClient courseClient;
 
-    public UserServiceImpl(UserRepository userRepository, UserCourseRepository userCourseRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserCourseRepository userCourseRepository,
+                           CourseClient courseClient) {
         this.userRepository = userRepository;
         this.userCourseRepository = userCourseRepository;
+        this.courseClient = courseClient;
     }
 
     @Override
@@ -52,13 +57,22 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
     }
 
+    @Transactional
     @Override
     public void deleteUserById(UserModel userModel) {
+        Boolean deleteUserCourseInCourse = false;
         var userCourses = userCourseRepository.findAllByUserId(userModel);
         if (!userCourses.isEmpty()) {
             userCourseRepository.deleteAll(userCourses);
+            deleteUserCourseInCourse = true;
         }
+
         userRepository.delete(userModel);
+        if (deleteUserCourseInCourse) {
+            logger.debug("Deleted user courses associated with user ID: {}", userModel.getUserId());
+            courseClient.deleteUserCourseInCourse(userModel.getUserId());
+        }
+
     }
 
     @Override
