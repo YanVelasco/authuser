@@ -14,4 +14,9 @@ public interface UserCourseRepository extends JpaRepository<UserCourseModel, UUI
 
         List<UserCourseModel> findAllByUserId(UserModel userModel);
 
+    boolean existsByCourseId(UUID courseId);
+
+    UserCourseModel findByCourseId(UUID courseId);
+
+    Object deleteAllByCourseId(UUID courseId);
 }
