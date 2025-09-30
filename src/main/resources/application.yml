@@ -4,7 +4,7 @@ server:
     context-path: '/ead-authuser/'
 spring:
   application:
-    name: authuser
+    name: ead-authuser-service
   datasource:
     url: jdbc:postgresql://localhost:5432/ead-authuser
     username: postgres
@@ -27,3 +27,9 @@ logging:
     root: INFO
     org.springframework.web: DEBUG
     org.hibernate: INFO
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
