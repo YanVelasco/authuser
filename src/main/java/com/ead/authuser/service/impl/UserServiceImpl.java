@@ -8,11 +8,8 @@ import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
-import com.ead.authuser.repository.UserCourseRepository;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -35,13 +32,11 @@ public class UserServiceImpl implements UserService {
     private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
     final UserRepository userRepository;
-    final UserCourseRepository userCourseRepository;
     final CourseClient courseClient;
 
-    public UserServiceImpl(UserRepository userRepository, UserCourseRepository userCourseRepository,
+    public UserServiceImpl(UserRepository userRepository,
                            CourseClient courseClient) {
         this.userRepository = userRepository;
-        this.userCourseRepository = userCourseRepository;
         this.courseClient = courseClient;
     }
 
@@ -60,19 +55,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void deleteUserById(UserModel userModel) {
-        Boolean deleteUserCourseInCourse = false;
-        var userCourses = userCourseRepository.findAllByUserId(userModel);
-        if (!userCourses.isEmpty()) {
-            userCourseRepository.deleteAll(userCourses);
-            deleteUserCourseInCourse = true;
-        }
-
         userRepository.delete(userModel);
-        if (deleteUserCourseInCourse) {
-            logger.debug("Deleted user courses associated with user ID: {}", userModel.getUserId());
-            courseClient.deleteUserCourseInCourse(userModel.getUserId());
-        }
-
     }
 
     @Override
@@ -113,7 +96,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserPageDto findAll(Pageable pageable, String fullName, UserStatus userStatus, UserType userType,
-                               String username, String email, UUID courseId) {
+                               String username, String email) {
 
         Specification<UserModel> spec = (root, query, cb) -> cb.conjunction();
 
@@ -134,14 +117,6 @@ public class UserServiceImpl implements UserService {
         if (email != null && !email.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
         }
-
-        if (courseId != null) {
-            spec = spec.and((root, query, cb) -> {
-                Join<Object, Object> userCourseJoin = root.join("userCourses", JoinType.INNER);
-                return cb.equal(userCourseJoin.get("courseId"), courseId);
-            });
-        }
-
 
         var pageResult = userRepository.findAll(spec, pageable);
 

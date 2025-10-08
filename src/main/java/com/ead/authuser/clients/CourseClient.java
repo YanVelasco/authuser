@@ -42,18 +42,4 @@ public class CourseClient {
         }
     }
 
-    public void deleteUserCourseInCourse(UUID userId) {
-        String url = BASE_URL_COURSE + "/courses/users/" + userId;
-        logger.debug("Request URL for deleting user courses: {}", url);
-        try {
-            restClient
-                    .delete()
-                    .uri(url)
-                    .retrieve()
-                    .body(Void.class);
-        } catch (Exception e) {
-            logger.error("Error deleting courses for user {}: {}", userId, e.getMessage());
-        }
-    }
-
 }

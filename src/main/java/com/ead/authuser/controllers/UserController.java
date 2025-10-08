@@ -36,13 +36,12 @@ public class UserController {
             @RequestParam(required = false) UserStatus userStatus,
             @RequestParam(required = false) UserType userType,
             @RequestParam(required = false) String username,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) UUID courseId
+            @RequestParam(required = false) String email
     ) {
         logger.debug("GET getUsers: fullName {}, userStatus {}, userType {}, username {}, email {}, courseId {}",
-                fullName, userStatus, userType, username, email, courseId);
+                fullName, userStatus, userType, username, email);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(userService.findAll(pageable, fullName, userStatus, userType, username, email, courseId));
+                .body(userService.findAll(pageable, fullName, userStatus, userType, username, email));
     }
 
     @GetMapping("/{userId}")
