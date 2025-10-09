@@ -4,10 +4,12 @@ import com.ead.authuser.clients.CourseClient;
 import com.ead.authuser.controllers.UserController;
 import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
+import com.ead.authuser.enums.ActionType;
 import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
+import com.ead.authuser.publishers.UserEventPublisher;
 import com.ead.authuser.repository.UserRepository;
 import com.ead.authuser.service.UserService;
 import org.apache.logging.log4j.LogManager;
@@ -33,11 +35,13 @@ public class UserServiceImpl implements UserService {
 
     final UserRepository userRepository;
     final CourseClient courseClient;
+    final UserEventPublisher userEventPublisher;
 
     public UserServiceImpl(UserRepository userRepository,
-                           CourseClient courseClient) {
+                           CourseClient courseClient, UserEventPublisher userEventPublisher) {
         this.userRepository = userRepository;
         this.courseClient = courseClient;
+        this.userEventPublisher = userEventPublisher;
     }
 
     @Override
@@ -58,6 +62,7 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(userModel);
     }
 
+    @Transactional
     @Override
     public UserModel registerUser(UserDto userDto) {
         var userModel = new UserModel();
@@ -66,9 +71,14 @@ public class UserServiceImpl implements UserService {
         userModel.setUserType(UserType.USER);
         userModel.setCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-        return userRepository.save(userModel);
+        var savedUser = userRepository.save(userModel);
+
+        userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.CREATE));
+
+        return savedUser;
     }
 
+    @Transactional
     @Override
     public UserModel updateUser(UserModel userModel, UserDto userDto) {
         logger.debug("UserDto received {}", userDto);
@@ -86,6 +96,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(userModel);
     }
 
+    @Transactional
     @Override
     public UserModel updateUserImage(UserModel userModel, UserDto userDto) {
         logger.debug("New image {} received ", userDto.imageUrl());
@@ -129,6 +140,7 @@ public class UserServiceImpl implements UserService {
         return UserPageDto.from(pageResult);
     }
 
+    @Transactional
     @Override
     public UserModel saveSubscriptionInstructor(UserModel userModel) {
         userModel.setUserType(UserType.INSTRUCTOR);

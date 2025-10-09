@@ -23,6 +23,9 @@ ead:
   api:
     url:
       course: "http://ead-course-service/ead-course"
+  broker:
+    exchange:
+      userEvent: ead.userEvent
 logging:
   level:
     com.ead: TRACE

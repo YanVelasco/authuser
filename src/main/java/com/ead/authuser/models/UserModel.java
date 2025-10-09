@@ -1,5 +1,7 @@
 package com.ead.authuser.models;
 
+import com.ead.authuser.dtos.UserEventDto;
+import com.ead.authuser.enums.ActionType;
 import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -67,5 +69,19 @@ public class UserModel extends RepresentationModel<UserModel> implements Seriali
     @Column(name = "last_update_date", nullable = false)
     //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime lastUpdateDate;
+
+    public UserEventDto convertToUserEventDto(ActionType actionType) {
+        return new UserEventDto(
+                this.userId,
+                this.username,
+                this.email,
+                this.fullName,
+                this.userStatus.toString(),
+                this.userType.toString(),
+                this.phoneNumber,
+                this.imageUrl,
+                actionType.toString()
+        );
+    }
 
 }
