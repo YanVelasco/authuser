@@ -60,6 +60,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(UserModel userModel) {
         userRepository.delete(userModel);
+        userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.DELETE));
     }
 
     @Transactional
@@ -85,7 +86,9 @@ public class UserServiceImpl implements UserService {
         userModel.setFullName(userDto.fullName());
         userModel.setPhoneNumber(userDto.phoneNumber());
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-        return userRepository.save(userModel);
+        userRepository.save(userModel);
+        userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
+        return userModel;
     }
 
     @Override
@@ -102,7 +105,9 @@ public class UserServiceImpl implements UserService {
         logger.debug("New image {} received ", userDto.imageUrl());
         userModel.setImageUrl(userDto.imageUrl());
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-        return userRepository.save(userModel);
+        userRepository.save(userModel);
+        userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
+        return  userModel;
     }
 
     @Override
@@ -145,7 +150,9 @@ public class UserServiceImpl implements UserService {
     public UserModel saveSubscriptionInstructor(UserModel userModel) {
         userModel.setUserType(UserType.INSTRUCTOR);
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
-        return userRepository.save(userModel);
+        userRepository.save(userModel);
+        userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
+        return  userModel;
     }
 
     @Override
