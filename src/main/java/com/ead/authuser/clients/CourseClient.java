@@ -1,6 +1,7 @@
 package com.ead.authuser.clients;
 
 import com.ead.authuser.dtos.CoursePageDto;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ public class CourseClient {
         this.restClient = restClientbuilder.build();
     }
 
+    @Retry(name = "retryInstance")
     public CoursePageDto getAllCoursesByUser(UUID userId, Pageable pageable) {
         String url = BASE_URL_COURSE + "/courses?" + "page=" + pageable.getPageNumber() +
                 "&size=" + pageable.getPageSize() +
@@ -38,7 +40,7 @@ public class CourseClient {
                     .body(CoursePageDto.class);
         } catch (Exception e) {
             logger.error("Error fetching courses for user {}: {}", userId, e.getMessage());
-            return null;
+            throw new RuntimeException("Error fetching courses for user " + userId, e);
         }
     }
 
