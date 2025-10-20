@@ -5,18 +5,21 @@ import com.ead.authuser.controllers.UserController;
 import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
 import com.ead.authuser.enums.ActionType;
+import com.ead.authuser.enums.RoleName;
 import com.ead.authuser.enums.UserStatus;
 import com.ead.authuser.enums.UserType;
 import com.ead.authuser.exceptions.NotFoundException;
 import com.ead.authuser.models.UserModel;
 import com.ead.authuser.publishers.UserEventPublisher;
 import com.ead.authuser.repository.UserRepository;
+import com.ead.authuser.service.RoleService;
 import com.ead.authuser.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +39,17 @@ public class UserServiceImpl implements UserService {
     final UserRepository userRepository;
     final CourseClient courseClient;
     final UserEventPublisher userEventPublisher;
+    final RoleService roleService;
+    final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository,
-                           CourseClient courseClient, UserEventPublisher userEventPublisher) {
+                           CourseClient courseClient, UserEventPublisher userEventPublisher, RoleService roleService,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.courseClient = courseClient;
         this.userEventPublisher = userEventPublisher;
+        this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -72,6 +80,9 @@ public class UserServiceImpl implements UserService {
         userModel.setUserType(UserType.USER);
         userModel.setCreationDate(LocalDateTime.now(ZoneId.of("UTC")));
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
+        userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
+        userModel.getRoles().add(roleService.findByRoleName(RoleName.ROLE_USER));
+
         var savedUser = userRepository.save(userModel);
 
         userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.CREATE));
@@ -107,7 +118,7 @@ public class UserServiceImpl implements UserService {
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         userRepository.save(userModel);
         userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
-        return  userModel;
+        return userModel;
     }
 
     @Override
@@ -152,7 +163,7 @@ public class UserServiceImpl implements UserService {
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         userRepository.save(userModel);
         userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
-        return  userModel;
+        return userModel;
     }
 
     @Override
