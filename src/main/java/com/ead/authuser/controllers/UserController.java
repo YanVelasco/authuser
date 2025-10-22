@@ -1,5 +1,6 @@
 package com.ead.authuser.controllers;
 
+import com.ead.authuser.configs.security.UserDetailsImpl;
 import com.ead.authuser.dtos.UserDto;
 import com.ead.authuser.dtos.UserPageDto;
 import com.ead.authuser.enums.UserStatus;
@@ -12,6 +13,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +33,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<UserPageDto> getUsers(
             Pageable pageable,
@@ -38,18 +43,24 @@ public class UserController {
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String email
     ) {
-        logger.debug("GET getUsers: fullName {}, userStatus {}, userType {}, username {}, email {}, courseId {}",
-                fullName, userStatus, userType, username, email);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.findAll(pageable, fullName, userStatus, userType, username, email));
     }
 
+    @PreAuthorize("hasAnyRole('USER')")
     @GetMapping("/{userId}")
     public ResponseEntity<Object> getUserById(
-            @PathVariable(value = "userId") UUID userId
+            @PathVariable(value = "userId") UUID userId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         logger.debug("GET getUserById: userId {}", userId);
-        return ResponseEntity.ok(userService.getUserById(userId));
+        UUID currentUserId = userDetails.getUserId();
+        if (currentUserId.equals(userId)) {
+            return ResponseEntity.ok(userService.getUserById(userId));
+        } else {
+            logger.warn("GET getUserById: User {} trying to access data of user {}", currentUserId, userId);
+            throw new AccessDeniedException("Access denied");
+        }
     }
 
     @DeleteMapping("/{userId}")

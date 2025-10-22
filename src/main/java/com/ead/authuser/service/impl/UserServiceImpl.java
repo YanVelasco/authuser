@@ -146,13 +146,6 @@ public class UserServiceImpl implements UserService {
         }
 
         var pageResult = userRepository.findAll(spec, pageable);
-
-        if (!pageResult.isEmpty()) {
-            for (UserModel userModel : pageResult) {
-                userModel.add(linkTo(methodOn(UserController.class).getUserById(userModel.getUserId())).withSelfRel());
-            }
-        }
-
         return UserPageDto.from(pageResult);
     }
 
