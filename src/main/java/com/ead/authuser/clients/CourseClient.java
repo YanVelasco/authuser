@@ -8,9 +8,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
+import java.nio.file.AccessDeniedException;
 import java.util.UUID;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Component
 public class CourseClient {
@@ -28,7 +33,7 @@ public class CourseClient {
 
     @CircuitBreaker(name = "circuitbreakerInstance")
     @Retry(name = "retryInstance")
-    public CoursePageDto getAllCoursesByUser(UUID userId, Pageable pageable) {
+    public CoursePageDto getAllCoursesByUser(UUID userId, Pageable pageable, String token) throws AccessDeniedException {
         String url = BASE_URL_COURSE + "/courses?" + "page=" + pageable.getPageNumber() +
                 "&size=" + pageable.getPageSize() +
                 "&sort=" + pageable.getSort().toString().replace(": ", ",") +
@@ -38,9 +43,17 @@ public class CourseClient {
             return restClient
                     .get()
                     .uri(url)
+                    .header("Authorization", token)
                     .retrieve()
                     .body(CoursePageDto.class);
-        } catch (Exception e) {
+        } catch (HttpStatusCodeException e) {
+            logger.error("HTTP Status Error fetching courses for user {}: {}", userId, e.getStatusCode());
+            switch (e.getStatusCode()) {
+                case FORBIDDEN -> throw new AccessDeniedException("FORBIDDEN");
+                default ->
+                        throw new RuntimeException("HTTP Status Error fetching courses for user " + userId + ": " + e.getStatusCode(), e);
+            }
+        } catch (RestClientException e) {
             logger.error("Error fetching courses for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Error fetching courses for user " + userId, e);
         }
