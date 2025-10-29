@@ -105,7 +105,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserModel updatePassword(UserModel userModel, UserDto userDto) {
         logger.debug("New password {} received ", userDto.password());
-        userModel.setPassword(userDto.password());
+        userModel.setPassword(passwordEncoder.encode(userModel.getPassword()));
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         return userRepository.save(userModel);
     }

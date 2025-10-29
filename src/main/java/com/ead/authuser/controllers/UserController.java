@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,9 +29,11 @@ public class UserController {
     private static final Logger logger = LogManager.getLogger(UserController.class);
 
     final UserService userService;
+    final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PreAuthorize("hasAnyRole('ADMIN')")
@@ -91,7 +94,7 @@ public class UserController {
     ) {
         logger.debug("PUT updateUserPassword: userId {}, userDto {}", userId, userDto);
         var userModel = userService.getUserById(userId);
-        if (!userModel.getPassword().equals(userDto.oldPassword())) {
+        if (!passwordEncoder.matches(userDto.oldPassword(), userModel.getPassword())) {
             logger.warn("Put updateUserPassword: old password doesn't match for this user {}", userId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Old password does not match.");
         }

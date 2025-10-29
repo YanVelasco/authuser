@@ -1,8 +1,10 @@
 package com.ead.authuser.controllers;
 
 import com.ead.authuser.clients.CourseClient;
+import com.ead.authuser.configs.security.UserDetailsImpl;
 import com.ead.authuser.dtos.CoursePageDto;
 import com.ead.authuser.service.UserService;
+import com.ead.authuser.utils.SecurityUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -36,7 +38,15 @@ public class UserCourseController {
             @PathVariable(value = "userId") UUID userId,
             @RequestHeader("Authorization") String token
     ) throws AccessDeniedException {
-        return ResponseEntity.status(HttpStatus.OK).body(courseClient.getAllCoursesByUser(userId, pageable, token));
+        UserDetailsImpl authenticatedUser = SecurityUtils.getAuthenticatedUser().orElseThrow(
+                () -> new AccessDeniedException("User not authenticated")
+        );
+        if (authenticatedUser.getUserId().equals(userId) || SecurityUtils.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.OK).body(courseClient.getAllCoursesByUser(userId, pageable, token));
+        } else {
+            throw new AccessDeniedException("You do not have permission to access these courses.");
+        }
+
     }
 
 }
