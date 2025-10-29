@@ -35,4 +35,6 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
+    UserModel registerAdminUser(UserDto userDto);
+
 }

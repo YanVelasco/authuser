@@ -69,4 +69,17 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new JsonWebTokenDto(jwt));
     }
 
+    @PostMapping("/signup/admin/usr")
+    public ResponseEntity<Object> registerAdminUser(
+            @RequestBody @Validated(UserDto.UserView.RegistrationPost.class) @JsonView(UserDto.UserView.RegistrationPost.class) UserDto userDto,
+            Errors errors
+    ) {
+        userValidator.validate(userDto, errors);
+        if (errors.hasErrors()) {
+            logger.error("Error on register admin user: {}", errors.getAllErrors());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors.getAllErrors());
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerAdminUser(userDto));
+    }
+
 }
