@@ -153,6 +153,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserModel saveSubscriptionInstructor(UserModel userModel) {
         userModel.setUserType(UserType.INSTRUCTOR);
+        userModel.getRoles().add(roleService.findByRoleName(RoleName.ROLE_INSTRUCTOR));
         userModel.setLastUpdateDate(LocalDateTime.now(ZoneId.of("UTC")));
         userRepository.save(userModel);
         userEventPublisher.publishUserEvent(userModel.convertToUserEventDto(ActionType.UPDATE));
